@@ -18,7 +18,7 @@
 
 **Purpose**: Create the `.claude/skills/` directory structure required by `plugin.json`
 
-- [ ] T001 Create `.claude/skills/` directory tree: `solid-audit/references/`, `srp/`, `ocp/`, `lsp/`, `isp/`, `dip/`, `solid-fix/` — place an empty `SKILL.md` placeholder in each skill folder
+- [x] T001 Create `.claude/skills/` directory tree: `solid-audit/references/`, `srp/`, `ocp/`, `lsp/`, `isp/`, `dip/`, `solid-fix/` — place an empty `SKILL.md` placeholder in each skill folder
 
 ---
 
@@ -28,7 +28,7 @@
 
 **⚠️ CRITICAL**: Plugin must be structurally valid before skills can be tested
 
-- [ ] T002 Verify `.claude-plugin/plugin.json` `skills` path is `"./.claude/skills"` and `version` matches the `version` field in `.claude-plugin/marketplace.json` — fix any mismatch before proceeding
+- [x] T002 Verify `.claude-plugin/plugin.json` `skills` path is `"./.claude/skills"` and `version` matches the `version` field in `.claude-plugin/marketplace.json` — fix any mismatch before proceeding
 
 **Checkpoint**: Plugin manifests are consistent. Skill content can now be written and tested.
 
@@ -42,8 +42,8 @@
 
 ### Implementation
 
-- [ ] T003 [US1] Write `.claude/skills/solid-audit/SKILL.md` — include: YAML frontmatter (`description: Audit changed files for SOLID design principle violations`), Trigger section, Scope Detection (git-staged → git-unstaged → user-provided fallback, skip lock/generated/migration/fixture files), Audit Logic for each principle (SRP: multiple responsibilities; OCP: switch-on-type / direct subclass instantiation; LSP: `NotImplementedError` in subclasses / narrowed preconditions; ISP: fat ABCs with unused methods; DIP: concrete instantiation in constructors), Output Format (structured report per contracts/skill-commands.md: files reviewed count, total violations, per-principle grouped violations with file+symbol+reason+suggestion, explicit "no violations" list, skipped files list), Rules (never modify files, language-appropriate idioms per file extension, note files >500 lines, skip intentional patterns like thin data containers)
-- [ ] T004 [P] [US1] Write `.claude/skills/solid-audit/references/examples.md` — 5 before/after code samples (one per principle) for Python and TypeScript: SRP (class with two responsibilities → two focused classes), OCP (switch-on-type → Protocol+registry), LSP (subclass throws `NotImplementedError` → composition), ISP (fat ABC with 8 methods → two narrow ABCs), DIP (class instantiates DB in `__init__` → constructor injection with Protocol)
+- [x] T003 [US1] Write `.claude/skills/solid-audit/SKILL.md` — include: YAML frontmatter (`description: Audit changed files for SOLID design principle violations`), Trigger section, Scope Detection (git-staged → git-unstaged → user-provided fallback, skip lock/generated/migration/fixture files), Audit Logic for each principle (SRP: multiple responsibilities; OCP: switch-on-type / direct subclass instantiation; LSP: `NotImplementedError` in subclasses / narrowed preconditions; ISP: fat ABCs with unused methods; DIP: concrete instantiation in constructors), Output Format (structured report per contracts/skill-commands.md: files reviewed count, total violations, per-principle grouped violations with file+symbol+reason+suggestion, explicit "no violations" list, skipped files list), Rules (never modify files, language-appropriate idioms per file extension, note files >500 lines, skip intentional patterns like thin data containers)
+- [x] T004 [P] [US1] Write `.claude/skills/solid-audit/references/examples.md` — 5 before/after code samples (one per principle) for Python and TypeScript: SRP (class with two responsibilities → two focused classes), OCP (switch-on-type → Protocol+registry), LSP (subclass throws `NotImplementedError` → composition), ISP (fat ABC with 8 methods → two narrow ABCs), DIP (class instantiates DB in `__init__` → constructor injection with Protocol)
 
 **Checkpoint**: `/solid-audit` is fully functional and safe to share with the team. All five principles detected. Stop here for MVP.
 
@@ -59,11 +59,11 @@
 
 All five skills share the same structure (research.md Section 2) and can be written in parallel.
 
-- [ ] T005 [P] [US2] Write `.claude/skills/srp/SKILL.md` — description: `Fix Single Responsibility Principle violations`; Trigger, Scope Detection (same as solid-audit); SRP Fix Logic (detect classes/functions with multiple responsibilities, extract to separate focused class/function, preserve public interface); Confirmation Flow (show before/after snippet, diff summary, ask "Proceed with fix? (yes/no)", skip if declined); Fix Rules (behavior-preserving only, skip-on-uncertainty with `[SKIP — may affect behavior]` flag, match existing style: type hints/docstrings/imports, show diff summary per modified file); Language patterns: Python (extract class, use dataclass for value objects), TypeScript (extract class/module)
-- [ ] T006 [P] [US2] Write `.claude/skills/ocp/SKILL.md` — description: `Fix Open/Closed Principle violations`; same structure as srp/SKILL.md; OCP Fix Logic (detect switch-on-type strings or direct subclass instantiation, propose Protocol+registry pattern for Python / interface+factory for TypeScript/Java / interface registration for Go); include note on when OCP refactor is too invasive to apply safely
-- [ ] T007 [P] [US2] Write `.claude/skills/lsp/SKILL.md` — description: `Fix Liskov Substitution Principle violations`; LSP Fix Logic (detect `NotImplementedError` in subclasses / narrowed preconditions / strengthened postconditions, propose flattening hierarchy or replacing inheritance with composition); flag cases where callers outside the reviewed scope must be updated
-- [ ] T008 [P] [US2] Write `.claude/skills/isp/SKILL.md` — description: `Fix Interface Segregation Principle violations`; ISP Fix Logic (detect fat ABC/Protocol/interface with 8+ methods where implementors stub half, propose splitting into two or more narrow ABCs/Protocols/interfaces by responsibility); skip if the class is a thin data container
-- [ ] T009 [P] [US2] Write `.claude/skills/dip/SKILL.md` — description: `Fix Dependency Inversion Principle violations`; DIP Fix Logic (detect concrete class instantiation in `__init__` / hardcoded `import` inside methods, propose constructor injection with a Protocol/interface type for Python/TypeScript, `@Autowired` or manual injection for Java, interface acceptance for Go); preserve existing default values where possible to minimize call-site changes
+- [x] T005 [P] [US2] Write `.claude/skills/srp/SKILL.md` — description: `Fix Single Responsibility Principle violations`; Trigger, Scope Detection (same as solid-audit); SRP Fix Logic (detect classes/functions with multiple responsibilities, extract to separate focused class/function, preserve public interface); Confirmation Flow (show before/after snippet, diff summary, ask "Proceed with fix? (yes/no)", skip if declined); Fix Rules (behavior-preserving only, skip-on-uncertainty with `[SKIP — may affect behavior]` flag, match existing style: type hints/docstrings/imports, show diff summary per modified file); Language patterns: Python (extract class, use dataclass for value objects), TypeScript (extract class/module)
+- [x] T006 [P] [US2] Write `.claude/skills/ocp/SKILL.md` — description: `Fix Open/Closed Principle violations`; same structure as srp/SKILL.md; OCP Fix Logic (detect switch-on-type strings or direct subclass instantiation, propose Protocol+registry pattern for Python / interface+factory for TypeScript/Java / interface registration for Go); include note on when OCP refactor is too invasive to apply safely
+- [x] T007 [P] [US2] Write `.claude/skills/lsp/SKILL.md` — description: `Fix Liskov Substitution Principle violations`; LSP Fix Logic (detect `NotImplementedError` in subclasses / narrowed preconditions / strengthened postconditions, propose flattening hierarchy or replacing inheritance with composition); flag cases where callers outside the reviewed scope must be updated
+- [x] T008 [P] [US2] Write `.claude/skills/isp/SKILL.md` — description: `Fix Interface Segregation Principle violations`; ISP Fix Logic (detect fat ABC/Protocol/interface with 8+ methods where implementors stub half, propose splitting into two or more narrow ABCs/Protocols/interfaces by responsibility); skip if the class is a thin data container
+- [x] T009 [P] [US2] Write `.claude/skills/dip/SKILL.md` — description: `Fix Dependency Inversion Principle violations`; DIP Fix Logic (detect concrete class instantiation in `__init__` / hardcoded `import` inside methods, propose constructor injection with a Protocol/interface type for Python/TypeScript, `@Autowired` or manual injection for Java, interface acceptance for Go); preserve existing default values where possible to minimize call-site changes
 
 **Checkpoint**: All five single-principle fix commands work independently. Team can use `/srp` through `/dip` before `/solid-fix` is ready.
 
@@ -77,7 +77,7 @@ All five skills share the same structure (research.md Section 2) and can be writ
 
 ### Implementation
 
-- [ ] T010 [US3] Write `.claude/skills/solid-fix/SKILL.md` — description: `Fix all SOLID principle violations across all five principles`; Trigger, Scope Detection (same as solid-audit); Orchestration Logic (run S/O/L/I/D analyses sequentially to collect all violations, group by principle for the confirmation prompt, present single grouped confirmation per contracts/skill-commands.md Phase 1 Proposal format); Fix Application (apply confirmed fixes in order S → O → L → I → D to avoid conflicting transformations, skip any violation flagged as unsafe); Output (per-principle diff summary after all fixes applied, total count: N files modified, M violations skipped)
+- [x] T010 [US3] Write `.claude/skills/solid-fix/SKILL.md` — description: `Fix all SOLID principle violations across all five principles`; Trigger, Scope Detection (same as solid-audit); Orchestration Logic (run S/O/L/I/D analyses sequentially to collect all violations, group by principle for the confirmation prompt, present single grouped confirmation per contracts/skill-commands.md Phase 1 Proposal format); Fix Application (apply confirmed fixes in order S → O → L → I → D to avoid conflicting transformations, skip any violation flagged as unsafe); Output (per-principle diff summary after all fixes applied, total count: N files modified, M violations skipped)
 
 **Checkpoint**: All three user stories complete. Full plugin is functional.
 
@@ -87,8 +87,8 @@ All five skills share the same structure (research.md Section 2) and can be writ
 
 **Purpose**: Documentation and release tagging
 
-- [ ] T011 [P] Write `README.md` at repository root — include: one-line description, install command (`/plugin marketplace add muthuspark/solid-audit`), slash command reference table (all 7 commands, whether they modify files, confirmation required), typical workflow (write code → stage → `/solid-audit` → fix command → review diff → PR), supported languages table, what gets skipped automatically
-- [ ] T012 Confirm `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` both show `"version": "1.0.0"` (must match), then create git tag `v1.0.0`
+- [x] T011 [P] Write `README.md` at repository root — include: one-line description, install command (`/plugin marketplace add muthuspark/solid-audit`), slash command reference table (all 7 commands, whether they modify files, confirmation required), typical workflow (write code → stage → `/solid-audit` → fix command → review diff → PR), supported languages table, what gets skipped automatically
+- [x] T012 Confirm `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` both show `"version": "1.0.0"` (must match), then create git tag `v1.0.0`
 
 ---
 
