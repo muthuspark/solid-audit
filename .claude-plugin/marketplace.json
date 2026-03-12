@@ -1,0 +1,19 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "solid-audit",
+  "metadata": {
+    "description": "SOLID design audit and fix for Claude Code."
+  },
+  "owner": {
+    "name": "Muthukrishnan",
+    "email": "muthukrishnan749@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "solid-audit",
+      "version": "1.0.0",
+      "category": "code-quality",
+      "tags": ["solid", "design-patterns", "refactoring", "code-review"]
+    }
+  ]
+}
