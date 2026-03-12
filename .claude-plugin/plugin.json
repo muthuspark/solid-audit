@@ -1,7 +1,7 @@
 {
   "name": "solid-audit",
   "description": "SOLID design auditor and fixer for Claude Code.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "Muthukrishnan",
     "email": "muthukrishnan749@gmail.com"
