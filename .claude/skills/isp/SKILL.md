@@ -1,5 +1,11 @@
 ---
-description: Fix Interface Segregation Principle violations
+name: isp
+description: Fix Interface Segregation Principle violations with confirmation and diff summary.
+user-invokable: true
+args:
+  - name: path
+    description: Optional file or directory path to audit/fix instead of git diff
+    required: false
 ---
 
 ## Trigger
