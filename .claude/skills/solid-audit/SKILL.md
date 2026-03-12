@@ -1,5 +1,11 @@
 ---
-description: Audit changed files for SOLID design principle violations
+name: solid-audit
+description: Audit changed files for SOLID design principle violations and output a structured per-principle report.
+user-invokable: true
+args:
+  - name: path
+    description: Optional file or directory path to audit/fix instead of git diff
+    required: false
 ---
 
 ## Trigger
