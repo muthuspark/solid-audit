@@ -11,7 +11,13 @@
   "plugins": [
     {
       "name": "solid-audit",
+      "description": "SOLID design auditor and fixer for Claude Code. Audit changed files for violations and apply behavior-preserving fixes with /solid-audit, /srp, /ocp, /lsp, /isp, /dip, and /solid-fix.",
       "version": "1.0.0",
+      "author": {
+        "name": "Muthukrishnan",
+        "email": "muthukrishnan749@gmail.com"
+      },
+      "source": "./",
       "category": "code-quality",
       "tags": ["solid", "design-patterns", "refactoring", "code-review"]
     }
