@@ -18,6 +18,7 @@
         "email": "muthukrishnan749@gmail.com"
       },
       "source": "./",
+      "license": "Apache-2.0",
       "homepage": "https://github.com/muthuspark/solid-audit"
     }
   ]

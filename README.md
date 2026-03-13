@@ -7,7 +7,13 @@ Review your changed files for SOLID design principle violations and apply target
 ## Install
 
 ```bash
+# Add the muthuspark/solid-audit marketplace
 /plugin marketplace add muthuspark/solid-audit
+
+# Install the plugin
+/plugin install solid-audit@solid-audit
+
+
 ```
 
 Run this once in any Claude Code session. The plugin is available immediately.
