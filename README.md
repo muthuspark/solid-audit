@@ -118,15 +118,19 @@ Every fix command:
 | Language | Idioms Used |
 |----------|-------------|
 | Python | `Protocol`, `abc.ABC`, constructor injection, `@dataclass` |
-| TypeScript | `interface`, `abstract class`, constructor injection |
+| TypeScript / TSX | `interface`, `abstract class`, constructor injection |
 | Java | `interface`, `abstract class`, `@Autowired` or constructor injection |
-| Go | interface types, struct composition |
+| Go | interface types, struct composition, constructor functions |
+| C# | `interface`, `abstract class`, constructor injection, `IServiceCollection` |
+| Kotlin | `interface`, `data class`, `sealed class`, constructor injection |
+| Ruby | modules, duck typing, keyword argument injection |
+| PHP | `interface`, `abstract class`, constructor injection, DI containers |
 
 ---
 
 ## What Gets Skipped Automatically
 
-- `*.lock` files (`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`)
+- `*.lock` files (`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `Gemfile.lock`, `composer.lock`)
 - Database migrations (`**/migrations/**`)
 - Generated code (`**/__generated__/**`)
 - Test fixtures (`**/fixtures/**`)

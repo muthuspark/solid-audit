@@ -86,6 +86,53 @@ type Renderer interface { Render(data []interface{}) string }
 var renderers = map[string]Renderer{"pdf": &PdfRenderer{}, "csv": &CsvRenderer{}}
 ```
 
+**C#:**
+```csharp
+interface IRenderer { string Render(List<object> data); }
+var renderers = new Dictionary<string, IRenderer> {
+    ["pdf"] = new PdfRenderer(),
+    ["csv"] = new CsvRenderer(),
+};
+string Export(List<object> data, string format) {
+    if (!renderers.TryGetValue(format, out var r)) throw new ArgumentException($"Unknown format: {format}");
+    return r.Render(data);
+}
+```
+
+**Kotlin:**
+```kotlin
+interface Renderer { fun render(data: List<Any>): String }
+val renderers: Map<String, Renderer> = mapOf(
+    "pdf" to PdfRenderer(),
+    "csv" to CsvRenderer(),
+)
+fun export(data: List<Any>, format: String): String =
+    renderers[format]?.render(data) ?: throw IllegalArgumentException("Unknown format: $format")
+```
+
+**Ruby:**
+```ruby
+RENDERERS = {
+  "pdf" => PdfRenderer.new,
+  "csv" => CsvRenderer.new,
+}.freeze
+
+def export(data, format)
+  renderer = RENDERERS.fetch(format) { raise ArgumentError, "Unknown format: #{format}" }
+  renderer.render(data)
+end
+```
+
+**PHP:**
+```php
+interface Renderer { public function render(array $data): string; }
+$renderers = ['pdf' => new PdfRenderer(), 'csv' => new CsvRenderer()];
+function export(array $data, string $format) use ($renderers): string {
+    if (!isset($renderers[$format])) throw new \InvalidArgumentException("Unknown format: $format");
+    return $renderers[$format]->render($data);
+}
+```
+
 ### Safety Check
 
 Before proposing a fix:

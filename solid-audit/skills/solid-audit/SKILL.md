@@ -17,7 +17,7 @@ Determine which files to analyze using this priority order:
 4. **Ask user** — If no git diff is available (no git repo or empty diff), ask: "No changed files detected. Please provide a file or directory path to audit."
 
 **Always skip these files regardless of scope:**
-- `*.lock`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`
+- `*.lock`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `Gemfile.lock`, `composer.lock`
 - Files matching `**/migrations/**`
 - Files matching `**/__generated__/**`
 - Files matching `**/fixtures/**`
@@ -41,6 +41,10 @@ For each file in scope, read its full content and check for each of the five SOL
 - TypeScript: each class/module should have one reason to change
 - Java: same principle; extract to new class
 - Go: separate concerns into distinct structs or functions
+- C#: extract to new `class`; use `record` for value objects
+- Kotlin: extract to new `class`; use `data class` for value objects
+- Ruby: extract to new class; use modules for shared behavior
+- PHP: extract to new class; use traits for shared behavior
 
 ### O — Open/Closed Principle
 
@@ -54,11 +58,16 @@ For each file in scope, read its full content and check for each of the five SOL
 - TypeScript: `interface` + factory/registry
 - Java: `interface` + factory pattern
 - Go: `interface` + registration map
+- C#: `interface` + `Dictionary<string, IHandler>` registry
+- Kotlin: `interface` + `mapOf<String, Handler>()` registry; also consider sealed classes with `when`
+- Ruby: hash-based dispatch (`HANDLERS = { "x" => XHandler.new }.freeze`)
+- PHP: `interface` + array registry
 
 ### L — Liskov Substitution Principle
 
 **Violation pattern:** A subclass that cannot be used in place of its base class. Look for:
-- `raise NotImplementedError` (Python) or `throw new Error("not implemented")` (TS/Java) in a method inherited from the base class
+- `raise NotImplementedError` (Python/Ruby) or `throw new Error("not implemented")` / `throw new UnsupportedOperationException()` (TS/Java/Kotlin) or `throw new NotImplementedException()` (C#) or `throw new \BadMethodCallException()` (PHP) in a method inherited from the base class
+- `TODO()` (Kotlin) used as a stub in an overriding method
 - A subclass method that rejects inputs the base class accepts (narrowed preconditions)
 - A subclass method that returns a more restricted type or throws exceptions not declared in the base contract
 
@@ -66,6 +75,10 @@ For each file in scope, read its full content and check for each of the five SOL
 - Python: flatten hierarchy or replace inheritance with composition
 - TypeScript/Java: same — prefer composition over inheritance when LSP is violated
 - Go: struct embedding replaced with interface acceptance
+- C#: prefer composition; `NotImplementedException` in override signals hierarchy mismatch
+- Kotlin: `UnsupportedOperationException()` or `TODO()` in override signals hierarchy mismatch
+- Ruby: use duck typing with focused modules instead of deep inheritance
+- PHP: prefer composition; `BadMethodCallException` in override signals hierarchy mismatch
 
 ### I — Interface Segregation Principle
 
@@ -79,6 +92,10 @@ For each file in scope, read its full content and check for each of the five SOL
 - Python: split `abc.ABC` or `Protocol` into narrow role interfaces
 - TypeScript/Java: split `interface`
 - Go: narrow the `interface` type to what callers actually need
+- C#: split `interface`; C# supports multiple interface implementation
+- Kotlin: split `interface`; Kotlin interfaces can have default method implementations
+- Ruby: split into smaller focused modules; use `include` selectively
+- PHP: split `interface`; PHP supports multiple interface implementation
 
 ### D — Dependency Inversion Principle
 
@@ -92,6 +109,10 @@ For each file in scope, read its full content and check for each of the five SOL
 - TypeScript: accept interface type in constructor
 - Java: accept interface in constructor; note `@Autowired` for Spring users
 - Go: accept interface in constructor/function
+- C#: accept interface in constructor; ASP.NET Core users register in `IServiceCollection`
+- Kotlin: accept interface in constructor; Android users use Hilt/Koin for injection
+- Ruby: inject via constructor keyword argument with a default: `def initialize(db: PostgresDatabase.new)`
+- PHP: accept interface in constructor; Symfony/Laravel DI containers resolve automatically
 
 ## Output Format
 
@@ -142,6 +163,10 @@ Example:
    - `.ts`, `.tsx` → TypeScript idioms (interface, abstract class)
    - `.java` → Java idioms (interface, abstract class, @Autowired)
    - `.go` → Go idioms (interface types, struct composition)
+   - `.cs` → C# idioms (interface, abstract class, IServiceCollection)
+   - `.kt` → Kotlin idioms (interface, data class, sealed class)
+   - `.rb` → Ruby idioms (modules, duck typing, keyword arguments)
+   - `.php` → PHP idioms (interface, abstract class, DI container)
 4. **Skip intentional patterns**: If a class is clearly a thin data container, configuration holder, or value object, skip it and note: `{SymbolName} — skipped (appears to be a data container)`
 5. **Test files**: Flag violations only if they cause real maintainability issues, not just structural purity.
 6. **Large files (>500 lines)**: Audit normally, but add the large-file warning at the end of that file's section.

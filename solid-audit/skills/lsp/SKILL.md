@@ -27,6 +27,10 @@ A subclass violates LSP when it cannot be used in place of its base class. Look 
 1. **NotImplementedError / not implemented throws:**
    - Python: `raise NotImplementedError` in a method inherited from the base class
    - TypeScript/Java: `throw new Error("not implemented")` or `throw new UnsupportedOperationException()` in an overriding method
+   - C#: `throw new NotImplementedException()` in an overriding method
+   - Kotlin: `throw UnsupportedOperationException()` or `TODO()` used as a stub in an overriding method
+   - Ruby: `raise NotImplementedError` in an overriding method
+   - PHP: `throw new \BadMethodCallException("not implemented")` in an overriding method
 
 2. **Narrowed preconditions:** A subclass method rejects inputs the base class accepts (e.g., base accepts `int`, subclass only accepts `int > 0`)
 
@@ -79,6 +83,72 @@ class Penguin:
 interface Shape { area(): number; }
 class Rectangle implements Shape { area(): number { return this.w * this.h; } }
 class Square implements Shape { area(): number { return this.side ** 2; } }
+```
+
+**Java (flatten):**
+```java
+// After
+interface Shape { double area(); }
+class Rectangle implements Shape { public double area() { return width * height; } }
+class Square implements Shape { public double area() { return side * side; } }
+```
+
+**Go (interface composition):**
+```go
+// After — no inheritance; each type independently satisfies the interface
+type Mover interface { Move() string }
+type FlyingBird struct{}
+func (f *FlyingBird) Move() string { return "moving" }
+func (f *FlyingBird) Fly() string { return "flying" }
+type Penguin struct{}
+func (p *Penguin) Move() string { return "moving" }
+func (p *Penguin) Swim() string { return "swimming" }
+```
+
+**C# (flatten):**
+```csharp
+// After
+interface IShape { double Area(); }
+class Rectangle : IShape { public double Area() => Width * Height; }
+class Square : IShape { public double Area() => Side * Side; }
+```
+
+**Kotlin (flatten):**
+```kotlin
+// After
+interface Shape { fun area(): Double }
+class Rectangle(val width: Double, val height: Double) : Shape {
+    override fun area() = width * height
+}
+class Square(val side: Double) : Shape {
+    override fun area() = side * side
+}
+```
+
+**Ruby (modules instead of deep inheritance):**
+```ruby
+# After — use focused modules instead of inheritance
+module Movable
+  def move = "moving"
+end
+
+class FlyingBird
+  include Movable
+  def fly = "flying"
+end
+
+class Penguin
+  include Movable
+  def swim = "swimming"
+end
+```
+
+**PHP (flatten):**
+```php
+// After
+interface Shape { public function area(): float; }
+class Rectangle implements Shape { public function area(): float { return $this->width * $this->height; } }
+class Square implements Shape { public function area(): float { return $this->side ** 2; } }
 ```
 
 ### Safety Check

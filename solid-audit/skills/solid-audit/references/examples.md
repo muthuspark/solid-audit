@@ -80,6 +80,107 @@ class OrderNotifier {
 }
 ```
 
+### Java — Before (Violation)
+
+```java
+class UserService {
+    public List<Map<String, Object>> parseCsv(String path) { /* CSV parsing */ }
+    public void saveToDb(List<Map<String, Object>> users) { /* DB writes */ }
+    public void sendWelcomeEmail(String email) { /* SMTP send */ }
+}
+```
+
+### Java — After (Fixed)
+
+```java
+class CsvParser {
+    public List<Map<String, Object>> parse(String path) { /* CSV parsing */ }
+}
+
+class UserRepository {
+    public void save(List<Map<String, Object>> users) { /* DB writes */ }
+}
+
+class EmailService {
+    public void sendWelcome(String email) { /* SMTP send */ }
+}
+```
+
+### Go — Before (Violation)
+
+```go
+type UserService struct{}
+
+func (s *UserService) ParseCSV(path string) []map[string]string { /* CSV parsing */ }
+func (s *UserService) SaveToDB(users []map[string]string) { /* DB writes */ }
+func (s *UserService) SendWelcomeEmail(email string) { /* SMTP send */ }
+```
+
+### Go — After (Fixed)
+
+```go
+type CSVParser struct{}
+func (p *CSVParser) Parse(path string) []map[string]string { /* CSV parsing */ }
+
+type UserRepository struct{}
+func (r *UserRepository) Save(users []map[string]string) { /* DB writes */ }
+
+type EmailService struct{}
+func (e *EmailService) SendWelcome(email string) { /* SMTP send */ }
+```
+
+### C# — Before (Violation)
+
+```csharp
+class UserService {
+    public List<Dictionary<string, string>> ParseCsv(string path) { /* CSV parsing */ }
+    public void SaveToDb(List<Dictionary<string, string>> users) { /* DB writes */ }
+    public void SendWelcomeEmail(string email) { /* SMTP send */ }
+}
+```
+
+### C# — After (Fixed)
+
+```csharp
+class CsvParser {
+    public List<Dictionary<string, string>> Parse(string path) { /* CSV parsing */ }
+}
+
+class UserRepository {
+    public void Save(List<Dictionary<string, string>> users) { /* DB writes */ }
+}
+
+class EmailService {
+    public void SendWelcome(string email) { /* SMTP send */ }
+}
+```
+
+### Kotlin — Before (Violation)
+
+```kotlin
+class UserService {
+    fun parseCsv(path: String): List<Map<String, String>> = TODO()
+    fun saveToDb(users: List<Map<String, String>>) = TODO()
+    fun sendWelcomeEmail(email: String) = TODO()
+}
+```
+
+### Kotlin — After (Fixed)
+
+```kotlin
+class CsvParser {
+    fun parse(path: String): List<Map<String, String>> = TODO()
+}
+
+class UserRepository {
+    fun save(users: List<Map<String, String>>) = TODO()
+}
+
+class EmailService {
+    fun sendWelcome(email: String) = TODO()
+}
+```
+
 ---
 
 ## O — Open/Closed Principle
@@ -149,6 +250,109 @@ function getDiscount(user: User): number {
 }
 ```
 
+### Java — Before (Violation)
+
+```java
+String exportReport(List<?> data, String format) {
+    if (format.equals("pdf")) return renderPdf(data);
+    else if (format.equals("csv")) return renderCsv(data);
+    else if (format.equals("json")) return renderJson(data);
+    else throw new IllegalArgumentException("Unknown format: " + format);
+}
+```
+
+### Java — After (Fixed)
+
+```java
+interface Renderer { String render(List<?> data); }
+
+Map<String, Renderer> renderers = Map.of(
+    "pdf", new PdfRenderer(),
+    "csv", new CsvRenderer(),
+    "json", new JsonRenderer()
+);
+
+String exportReport(List<?> data, String format) {
+    Renderer r = renderers.get(format);
+    if (r == null) throw new IllegalArgumentException("Unknown format: " + format);
+    return r.render(data);
+}
+```
+
+### Go — Before (Violation)
+
+```go
+func exportReport(data []interface{}, format string) (string, error) {
+    if format == "pdf" { return renderPDF(data), nil }
+    if format == "csv" { return renderCSV(data), nil }
+    return "", fmt.Errorf("unknown format: %s", format)
+}
+```
+
+### Go — After (Fixed)
+
+```go
+type Renderer interface { Render(data []interface{}) string }
+var renderers = map[string]Renderer{"pdf": &PDFRenderer{}, "csv": &CSVRenderer{}}
+
+func exportReport(data []interface{}, format string) (string, error) {
+    r, ok := renderers[format]
+    if !ok { return "", fmt.Errorf("unknown format: %s", format) }
+    return r.Render(data), nil
+}
+```
+
+### C# — Before (Violation)
+
+```csharp
+string ExportReport(List<object> data, string format) {
+    if (format == "pdf") return RenderPdf(data);
+    else if (format == "csv") return RenderCsv(data);
+    else throw new ArgumentException($"Unknown format: {format}");
+}
+```
+
+### C# — After (Fixed)
+
+```csharp
+interface IRenderer { string Render(List<object> data); }
+
+var renderers = new Dictionary<string, IRenderer> {
+    ["pdf"] = new PdfRenderer(),
+    ["csv"] = new CsvRenderer(),
+};
+
+string ExportReport(List<object> data, string format) {
+    if (!renderers.TryGetValue(format, out var r))
+        throw new ArgumentException($"Unknown format: {format}");
+    return r.Render(data);
+}
+```
+
+### Kotlin — Before (Violation)
+
+```kotlin
+fun exportReport(data: List<Any>, format: String): String = when (format) {
+    "pdf" -> renderPdf(data)
+    "csv" -> renderCsv(data)
+    else -> throw IllegalArgumentException("Unknown format: $format")
+}
+```
+
+### Kotlin — After (Fixed)
+
+```kotlin
+interface Renderer { fun render(data: List<Any>): String }
+
+val renderers: Map<String, Renderer> = mapOf(
+    "pdf" to PdfRenderer(),
+    "csv" to CsvRenderer(),
+)
+
+fun exportReport(data: List<Any>, format: String): String =
+    renderers[format]?.render(data) ?: throw IllegalArgumentException("Unknown format: $format")
+```
+
 ---
 
 ## L — Liskov Substitution Principle
@@ -213,6 +417,98 @@ class Rectangle implements Shape {
 class Square implements Shape {
   constructor(private side: number) {}
   area(): number { return this.side * this.side; }
+}
+```
+
+### Java — Before (Violation)
+
+```java
+class Bird {
+    public String fly() { return "flying"; }
+}
+
+class Penguin extends Bird {
+    @Override
+    public String fly() { throw new UnsupportedOperationException("Penguins cannot fly"); }
+}
+```
+
+### Java — After (Fixed)
+
+```java
+interface Shape { double area(); }
+class Rectangle implements Shape { public double area() { return width * height; } }
+class Square implements Shape { public double area() { return side * side; } }
+```
+
+### Go — Before (Violation)
+
+```go
+type Animal struct{}
+func (a *Animal) Fly() string { return "flying" }
+
+type Penguin struct{ Animal }
+// Penguin embeds Animal but cannot fly — embedding the wrong behavior
+```
+
+### Go — After (Fixed)
+
+```go
+// No inheritance — each type satisfies only what it can
+type Flyer interface { Fly() string }
+type Swimmer interface { Swim() string }
+
+type Eagle struct{}
+func (e *Eagle) Fly() string { return "flying" }
+
+type Penguin struct{}
+func (p *Penguin) Swim() string { return "swimming" }
+```
+
+### C# — Before (Violation)
+
+```csharp
+class Rectangle {
+    public virtual void SetWidth(double w) { Width = w; }
+    public virtual void SetHeight(double h) { Height = h; }
+    public double Area() => Width * Height;
+}
+
+class Square : Rectangle {
+    public override void SetWidth(double w) { Width = w; Height = w; }  // breaks LSP
+    public override void SetHeight(double h) { Width = h; Height = h; }
+}
+```
+
+### C# — After (Fixed)
+
+```csharp
+interface IShape { double Area(); }
+class Rectangle : IShape { public double Area() => Width * Height; }
+class Square : IShape { public double Area() => Side * Side; }
+```
+
+### Kotlin — Before (Violation)
+
+```kotlin
+open class Bird {
+    open fun fly(): String = "flying"
+}
+
+class Penguin : Bird() {
+    override fun fly(): String = throw UnsupportedOperationException("Penguins cannot fly")
+}
+```
+
+### Kotlin — After (Fixed)
+
+```kotlin
+interface Shape { fun area(): Double }
+class Rectangle(val width: Double, val height: Double) : Shape {
+    override fun area() = width * height
+}
+class Square(val side: Double) : Shape {
+    override fun area() = side * side
 }
 ```
 
@@ -326,6 +622,126 @@ class AllInOnePrinter implements Printable, Scannable, Faxable {
 }
 ```
 
+### Java — Before (Violation)
+
+```java
+interface Worker {
+    void work();
+    void eat();
+    void sleep();
+    int reportHours();
+    void requestVacation();
+}
+
+class Robot implements Worker {
+    public void work() { /* impl */ }
+    public void eat() { throw new UnsupportedOperationException(); }
+    public void sleep() { throw new UnsupportedOperationException(); }
+    public int reportHours() { return 0; }
+    public void requestVacation() { throw new UnsupportedOperationException(); }
+}
+```
+
+### Java — After (Fixed)
+
+```java
+interface Workable { void work(); }
+interface HumanNeeds { void eat(); void sleep(); void requestVacation(); }
+interface Reportable { int reportHours(); }
+
+class Robot implements Workable, Reportable {
+    public void work() { /* impl */ }
+    public int reportHours() { return 0; }
+}
+```
+
+### Go — Before (Violation)
+
+```go
+type Worker interface {
+    Work()
+    Eat()
+    Sleep()
+    ReportHours() int
+    RequestVacation()
+}
+```
+
+### Go — After (Fixed)
+
+```go
+// Narrow to what each caller actually needs
+type Worker interface { Work() }
+type Reporter interface { ReportHours() int }
+type HumanWorker interface { Worker; Eat(); Sleep(); RequestVacation() }
+```
+
+### C# — Before (Violation)
+
+```csharp
+interface IWorker {
+    void Work();
+    void Eat();
+    void Sleep();
+    int ReportHours();
+    void RequestVacation();
+}
+
+class Robot : IWorker {
+    public void Work() { /* impl */ }
+    public void Eat() => throw new NotImplementedException();
+    public void Sleep() => throw new NotImplementedException();
+    public int ReportHours() => 0;
+    public void RequestVacation() => throw new NotImplementedException();
+}
+```
+
+### C# — After (Fixed)
+
+```csharp
+interface IWorkable { void Work(); }
+interface IHumanNeeds { void Eat(); void Sleep(); void RequestVacation(); }
+interface IReportable { int ReportHours(); }
+
+class Robot : IWorkable, IReportable {
+    public void Work() { /* impl */ }
+    public int ReportHours() => 0;
+}
+```
+
+### Kotlin — Before (Violation)
+
+```kotlin
+interface Worker {
+    fun work()
+    fun eat()
+    fun sleep()
+    fun reportHours(): Int
+    fun requestVacation()
+}
+
+class Robot : Worker {
+    override fun work() { /* impl */ }
+    override fun eat() = throw UnsupportedOperationException()
+    override fun sleep() = throw UnsupportedOperationException()
+    override fun reportHours() = 0
+    override fun requestVacation() = throw UnsupportedOperationException()
+}
+```
+
+### Kotlin — After (Fixed)
+
+```kotlin
+interface Workable { fun work() }
+interface HumanNeeds { fun eat(); fun sleep(); fun requestVacation() }
+interface Reportable { fun reportHours(): Int }
+
+class Robot : Workable, Reportable {
+    override fun work() { /* impl */ }
+    override fun reportHours() = 0
+}
+```
+
 ---
 
 ## D — Dependency Inversion Principle
@@ -397,5 +813,97 @@ class ReportService {
     const data = this.db.query(`SELECT * FROM orders WHERE user_id = ?`, [userId]);
     return buildReport(data);
   }
+}
+```
+
+### Java — Before (Violation)
+
+```java
+class OrderService {
+    private final PostgresDatabase db = new PostgresDatabase("localhost", 5432);
+
+    public void placeOrder(Order order) {
+        db.save(order);
+    }
+}
+```
+
+### Java — After (Fixed)
+
+```java
+interface Database { void save(Order order); Optional<Order> find(String id); }
+
+class OrderService {
+    private final Database db;
+    public OrderService(Database db) { this.db = db; }
+    // Note: Spring users can use @Autowired instead
+
+    public void placeOrder(Order order) { db.save(order); }
+}
+```
+
+### Go — Before (Violation)
+
+```go
+type OrderService struct {
+    db *PostgresDatabase
+}
+func NewOrderService() *OrderService { return &OrderService{db: NewPostgresDatabase("localhost")} }
+```
+
+### Go — After (Fixed)
+
+```go
+type Database interface {
+    Save(order Order) error
+    Find(id string) (Order, error)
+}
+
+type OrderService struct { db Database }
+func NewOrderService(db Database) *OrderService { return &OrderService{db: db} }
+```
+
+### C# — Before (Violation)
+
+```csharp
+class OrderService {
+    private readonly PostgresDatabase _db = new("localhost", 5432);
+
+    public void PlaceOrder(Order order) => _db.Save(order);
+}
+```
+
+### C# — After (Fixed)
+
+```csharp
+interface IDatabase { void Save(Order order); Order? Find(string id); }
+
+class OrderService {
+    private readonly IDatabase _db;
+    public OrderService(IDatabase db) { _db = db; }
+    // ASP.NET Core: register IDatabase in IServiceCollection in Program.cs
+
+    public void PlaceOrder(Order order) => _db.Save(order);
+}
+```
+
+### Kotlin — Before (Violation)
+
+```kotlin
+class OrderService {
+    private val db = PostgresDatabase("localhost", 5432)
+
+    fun placeOrder(order: Order) = db.save(order)
+}
+```
+
+### Kotlin — After (Fixed)
+
+```kotlin
+interface Database { fun save(order: Order); fun find(id: String): Order? }
+
+class OrderService(private val db: Database) {
+    // Android: inject Database via Hilt or Koin
+    fun placeOrder(order: Order) = db.save(order)
 }
 ```

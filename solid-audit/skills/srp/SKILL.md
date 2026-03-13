@@ -44,6 +44,10 @@ Extract each distinct responsibility into its own focused class or function:
 - **TypeScript**: Extract to new `class` or module, inject via constructor
 - **Java**: Extract to new `class`, inject via constructor
 - **Go**: Extract to new `struct` or standalone functions
+- **C#**: Extract to new `class`; use `record` for value objects; inject via constructor
+- **Kotlin**: Extract to new `class`; use `data class` for value objects; inject via constructor
+- **Ruby**: Extract to new `class`; move shared behavior to a `module` if needed
+- **PHP**: Extract to new `class`; use `trait` for shared behavior
 
 **Style matching:**
 - Match existing type annotation style (Python type hints, TypeScript types)

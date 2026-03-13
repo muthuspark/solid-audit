@@ -29,6 +29,10 @@ An interface/ABC violates ISP when it forces implementors to provide methods the
    - TypeScript: `interface` with 6+ methods where an implementing class throws `new Error("not supported")` for multiple methods
    - Java: `interface` with multiple methods where an implementing class throws `UnsupportedOperationException`
    - Go: `interface` type that is larger than what any single caller actually needs
+   - C#: `interface` with multiple methods where a class throws `NotImplementedException`
+   - Kotlin: `interface` with multiple methods where a class uses `TODO()` or throws `UnsupportedOperationException`
+   - Ruby: module with multiple methods raising `NotImplementedError` in classes that only use a subset
+   - PHP: `interface` with multiple methods where a class throws `BadMethodCallException`
 
 2. **Mixed responsibilities in one interface:** The interface has methods from two or more logically distinct domains (e.g., both `print()` and `scan()` and `send_email()`)
 
@@ -109,6 +113,69 @@ interface Reportable { int reportHours(); }
 // After — narrow to what each caller actually needs
 type Worker interface { Work() }
 type Reporter interface { ReportHours() int }
+```
+
+**C#:**
+```csharp
+// After
+interface IWorkable { void Work(); }
+interface IHumanNeeds { void Eat(); void Sleep(); }
+interface IReportable { int ReportHours(); }
+
+class Robot : IWorkable, IReportable {
+    public void Work() { /* impl */ }
+    public int ReportHours() => 0;
+}
+```
+
+**Kotlin:**
+```kotlin
+// After
+interface Workable { fun work() }
+interface HumanNeeds { fun eat(); fun sleep() }
+interface Reportable { fun reportHours(): Int }
+
+class Robot : Workable, Reportable {
+    override fun work() { /* impl */ }
+    override fun reportHours() = 0
+}
+```
+
+**Ruby:**
+```ruby
+# After — split into focused modules
+module Workable
+  def work = raise NotImplementedError
+end
+
+module HumanNeeds
+  def eat = raise NotImplementedError
+  def sleep = raise NotImplementedError
+end
+
+module Reportable
+  def report_hours = raise NotImplementedError
+end
+
+class Robot
+  include Workable
+  include Reportable
+  def work; end
+  def report_hours = 0
+end
+```
+
+**PHP:**
+```php
+// After
+interface Workable { public function work(): void; }
+interface HumanNeeds { public function eat(): void; public function sleep(): void; }
+interface Reportable { public function reportHours(): int; }
+
+class Robot implements Workable, Reportable {
+    public function work(): void { /* impl */ }
+    public function reportHours(): int { return 0; }
+}
 ```
 
 ### How to Split

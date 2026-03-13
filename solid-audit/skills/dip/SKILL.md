@@ -28,6 +28,10 @@ A high-level module violates DIP when it depends directly on a concrete low-leve
    - Python: `self.db = DatabaseClient()` or `self.mailer = SmtpMailer(host="...")` inside `__init__`
    - TypeScript/Java: `this.db = new DatabaseClient()` inside a constructor
    - Go: `db: NewDatabaseClient()` assigned directly in a constructor function
+   - C#: `_db = new PostgresDatabase(...)` inside a constructor body
+   - Kotlin: `val db = PostgresDatabase(...)` hardcoded as a constructor body assignment
+   - Ruby: `@db = PostgresDatabase.new(...)` inside `initialize`
+   - PHP: `$this->db = new PostgresDatabase(...)` inside `__construct`
 
 2. **Hardcoded import used directly:**
    - A concrete class is imported and used directly with no interface/Protocol wrapping it
@@ -121,6 +125,72 @@ func NewOrderService() *OrderService { return &OrderService{db: NewPostgresDatab
 type Database interface { Save(order Order) error; Find(id string) (Order, error) }
 type OrderService struct { db Database }
 func NewOrderService(db Database) *OrderService { return &OrderService{db: db} }
+```
+
+**C#:**
+```csharp
+// Before
+class OrderService {
+    private readonly PostgresDatabase _db = new("localhost", 5432);
+}
+
+// After
+interface IDatabase { void Save(Order order); Order? Find(string id); }
+
+class OrderService {
+    private readonly IDatabase _db;
+    public OrderService(IDatabase db) { _db = db; }
+    // Note: ASP.NET Core users register IDatabase in IServiceCollection
+}
+```
+
+**Kotlin:**
+```kotlin
+// Before
+class OrderService {
+    private val db = PostgresDatabase("localhost", 5432)
+}
+
+// After
+interface Database { fun save(order: Order); fun find(id: String): Order? }
+
+class OrderService(private val db: Database) {
+    // Android users: inject Database via Hilt or Koin
+}
+```
+
+**Ruby:**
+```ruby
+# Before
+class OrderService
+  def initialize
+    @db = PostgresDatabase.new(host: "localhost", port: 5432)
+  end
+end
+
+# After — keyword argument with default preserves existing call sites
+class OrderService
+  def initialize(db: PostgresDatabase.new(host: "localhost", port: 5432))
+    @db = db
+  end
+end
+```
+
+**PHP:**
+```php
+// Before
+class OrderService {
+    private PostgresDatabase $db;
+    public function __construct() { $this->db = new PostgresDatabase("localhost", 5432); }
+}
+
+// After
+interface DatabaseInterface { public function save(Order $order): void; public function find(string $id): ?Order; }
+
+class OrderService {
+    public function __construct(private readonly DatabaseInterface $db) {}
+    // Symfony/Laravel DI containers resolve DatabaseInterface automatically
+}
 ```
 
 ### Protocol/Interface Definition

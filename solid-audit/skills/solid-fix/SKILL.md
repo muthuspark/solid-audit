@@ -115,6 +115,6 @@ For each fix:
 4. **Skip-on-uncertainty**: If a fix cannot be confirmed as behavior-preserving during application, flag `[SKIP — may affect behavior]` and continue — do not block other fixes.
 5. **Unsafe violations pre-flagged in the proposal**: Violations identified as unsafe during analysis are shown in the proposal under "Already marked as unsafe" — the user can see them but they will be skipped regardless of confirmation.
 6. **Per-principle diff summaries**: After applying all fixes, show a grouped diff summary per principle.
-7. **Style matching**: All fixes must match existing code style — type hints, docstrings, import ordering.
+7. **Style matching**: All fixes must match existing code style — type hints, docstrings, import ordering. Apply language-appropriate idioms: Python (`Protocol`/`abc.ABC`), TypeScript (`interface`), Java (`interface`/`@Autowired`), Go (`interface` types), C# (`interface`/`IServiceCollection`), Kotlin (`interface`/`data class`), Ruby (modules/keyword args), PHP (`interface`/DI container).
 8. **Large files (>500 lines)**: Note that fixes may need to be applied incrementally for each affected file.
 9. **No git repo / empty diff**: Ask the user for file paths before proceeding — never fail silently.
