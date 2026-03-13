@@ -8,5 +8,5 @@
   },
   "homepage": "https://github.com/muthuspark/solid-audit",
   "repository": "https://github.com/muthuspark/solid-audit",
-  "skills": "./.claude/skills"
+  "skills": "./skills"
 }
