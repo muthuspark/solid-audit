@@ -1,5 +1,4 @@
 {
-  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "solid-audit",
   "metadata": {
     "description": "SOLID design audit and fix for Claude Code."
@@ -12,13 +11,21 @@
     {
       "name": "solid-audit",
       "description": "SOLID design auditor and fixer for Claude Code. Audit changed files for violations and apply behavior-preserving fixes with /solid-audit, /srp, /ocp, /lsp, /isp, /dip, and /solid-fix.",
-      "version": "1.0.7",
+      "version": "1.0.8",
       "author": {
         "name": "Muthukrishnan",
         "email": "muthukrishnan749@gmail.com"
       },
       "source": "./",
-      "license": "Apache-2.0",
+      "strict": false,
+      "skills": [
+        "./skills/dip",
+        "./skills/isp",
+        "./skills/lsp",
+        "./skills/ocp",
+        "./skills/solid-audit",
+        "./skills/solid-fix"
+      ],
       "homepage": "https://github.com/muthuspark/solid-audit"
     }
   ]
