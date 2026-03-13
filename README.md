@@ -29,7 +29,7 @@ Post installation you should see the plugin listed in the marketplace tab
 
 | Command | Action | Modifies Files? | Confirmation? |
 |---------|--------|-----------------|---------------|
-| `/solid-audit` | Audit all 5 SOLID principles — structured report | No | No |
+| `/audit` | Audit all 5 SOLID principles — structured report | No | No |
 | `/srp` | Fix Single Responsibility violations | Yes | Yes |
 | `/ocp` | Fix Open/Closed violations | Yes | Yes |
 | `/lsp` | Fix Liskov Substitution violations | Yes | Yes |
@@ -131,7 +131,15 @@ Every fix command:
 ## File Layout
 
 ```
-.claude/
+solid-audit/
+├── commands/
+│   ├── audit.md
+│   ├── srp.md
+│   ├── ocp.md
+│   ├── lsp.md
+│   ├── isp.md
+│   ├── dip.md
+│   └── solid-fix.md
 └── skills/
     ├── solid-audit/
     │   ├── SKILL.md
