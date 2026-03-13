@@ -16,7 +16,7 @@ Determine which files to analyze using this priority order:
 3. **Git unstaged** — Run `git diff --name-only`. If output is non-empty, use those files.
 4. **Ask user** — If no git diff is available, ask for a file or directory path.
 
-**Always skip:** `*.lock`, `package-lock.json`, `yarn.lock`, `**/migrations/**`, `**/__generated__/**`, `**/fixtures/**`
+**Always skip:** `*.lock`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `Gemfile.lock`, `composer.lock`, `**/migrations/**`, `**/__generated__/**`, `**/fixtures/**`, `**/*.min.js`
 
 ## ISP Fix Logic
 
@@ -143,25 +143,17 @@ class Robot : Workable, Reportable {
 
 **Ruby:**
 ```ruby
-# After — split into focused modules
-module Workable
-  def work = raise NotImplementedError
-end
-
-module HumanNeeds
-  def eat = raise NotImplementedError
-  def sleep = raise NotImplementedError
-end
-
-module Reportable
-  def report_hours = raise NotImplementedError
-end
+# After — split into focused modules with real implementations
+# No NotImplementedError stubs needed — Robot only includes what it actually implements
+module Workable; end
+module HumanNeeds; end
+module Reportable; end
 
 class Robot
   include Workable
   include Reportable
-  def work; end
-  def report_hours = 0
+  def work; end          # real implementation
+  def report_hours = 0   # real implementation
 end
 ```
 
@@ -211,8 +203,8 @@ Found {N} ISP violation(s):
 Proceed with fix? (yes/no)
 ```
 
-If the user confirms → apply the fix and show the diff summary.
-If the user declines → do not modify any files.
+If the user types "yes", "y", or "proceed" → apply the fix and show the diff summary.
+If the user types "no", "n", "skip", or "cancel" → do not modify any files.
 
 ## Output After Fix
 
@@ -234,6 +226,9 @@ If the user declines → do not modify any files.
 3. **Behavior-preserving only**: Splitting an interface must not change any runtime behavior. The concrete implementations keep the same logic — only the interface hierarchy changes.
 4. **Skip thin containers**: If the "fat" interface is actually a data container or value object, skip and note it.
 5. **Caller scope**: If callers outside the reviewed file use the fat interface type and need updating, flag with `[SKIP — callers outside scope use the full interface]`.
-6. **Minimal footprint**: Only change the interface definition and the `implements`/`extends` declarations on concrete classes.
-7. **Style matching**: Match existing code style — type hints, docstrings, import ordering.
-8. **Diff summary**: After each modified file, show a plain-English summary of what changed.
+6. **Out-of-scope implementors**: If the fat interface has implementors in other files not in the reviewed scope, flag as `[SKIP — implementors outside scope may be affected]` rather than splitting blindly.
+7. **Minimal footprint**: Only change the interface definition and the `implements`/`extends` declarations on concrete classes. Remove stubs (`raise NotImplementedError`, `throw new Error`, `TODO()`) that are no longer needed after the split.
+8. **Style matching**: Match existing code style — type hints, docstrings, import ordering.
+9. **Diff summary**: After each modified file, show a plain-English summary of what changed.
+10. **Test files**: Flag violations only if they cause real maintainability issues.
+11. **Large files (>500 lines)**: Note that the fix may need to be applied incrementally.

@@ -16,7 +16,7 @@ Determine which files to analyze using this priority order:
 3. **Git unstaged** — Run `git diff --name-only`. If output is non-empty, use those files.
 4. **Ask user** — If no git diff is available, ask for a file or directory path.
 
-**Always skip:** `*.lock`, `package-lock.json`, `yarn.lock`, `**/migrations/**`, `**/__generated__/**`, `**/fixtures/**`
+**Always skip:** `*.lock`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `Gemfile.lock`, `composer.lock`, `**/migrations/**`, `**/__generated__/**`, `**/fixtures/**`, `**/*.min.js`
 
 ## SRP Fix Logic
 
@@ -31,13 +31,20 @@ A class or function violates SRP when it handles two or more **unrelated** conce
 
 ### Fix Strategy
 
-Extract each distinct responsibility into its own focused class or function:
+**For classes:** Extract each distinct responsibility into its own focused class:
 
-1. Identify the distinct responsibility groups within the violating class/function
-2. For each group, create a new class/function with a single, clear name
+1. Identify the distinct responsibility groups within the violating class
+2. For each group, create a new class with a single, clear name
 3. Move the relevant methods/logic to the new class
 4. Update the original class to accept the new classes via constructor injection (if needed) or remove it entirely
 5. Preserve the original public interface — callers of the original class must not need to change
+
+**For functions:** Split a multi-concern function into multiple focused functions:
+
+1. Identify the distinct steps in the function body (e.g., validate → persist → notify)
+2. Extract each step into its own named function with a clear, single-purpose name
+3. Replace the original body with calls to the extracted functions, or remove the monolith and update callers
+4. Each extracted function should be testable independently
 
 **Language patterns:**
 - **Python**: Extract to new `class`, use `@dataclass` for value objects, inject dependencies via `__init__`

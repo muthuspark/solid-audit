@@ -159,9 +159,9 @@ class EmailService {
 
 ```kotlin
 class UserService {
-    fun parseCsv(path: String): List<Map<String, String>> = TODO()
-    fun saveToDb(users: List<Map<String, String>>) = TODO()
-    fun sendWelcomeEmail(email: String) = TODO()
+    fun parseCsv(path: String): List<Map<String, String>> { /* CSV parsing */ }
+    fun saveToDb(users: List<Map<String, String>>) { /* DB writes */ }
+    fun sendWelcomeEmail(email: String) { /* SMTP send */ }
 }
 ```
 
@@ -169,15 +169,67 @@ class UserService {
 
 ```kotlin
 class CsvParser {
-    fun parse(path: String): List<Map<String, String>> = TODO()
+    fun parse(path: String): List<Map<String, String>> { /* CSV parsing */ }
 }
 
 class UserRepository {
-    fun save(users: List<Map<String, String>>) = TODO()
+    fun save(users: List<Map<String, String>>) { /* DB writes */ }
 }
 
 class EmailService {
-    fun sendWelcome(email: String) = TODO()
+    fun sendWelcome(email: String) { /* SMTP send */ }
+}
+```
+
+### Ruby — Before (Violation)
+
+```ruby
+class UserService
+  def parse_csv(path) = CSV.read(path, headers: true).map(&:to_h)
+  def save_to_db(users) = users.each { |u| DB.execute("INSERT INTO users VALUES (?)", u["email"]) }
+  def send_welcome_email(email) = Mailer.send(to: email, subject: "Welcome!")
+end
+```
+
+### Ruby — After (Fixed)
+
+```ruby
+class CsvParser
+  def parse(path) = CSV.read(path, headers: true).map(&:to_h)
+end
+
+class UserRepository
+  def save(users) = users.each { |u| DB.execute("INSERT INTO users VALUES (?)", u["email"]) }
+end
+
+class EmailService
+  def send_welcome(email) = Mailer.send(to: email, subject: "Welcome!")
+end
+```
+
+### PHP — Before (Violation)
+
+```php
+class UserService {
+    public function parseCsv(string $path): array { /* CSV parsing */ }
+    public function saveToDb(array $users): void { /* DB writes */ }
+    public function sendWelcomeEmail(string $email): void { /* SMTP send */ }
+}
+```
+
+### PHP — After (Fixed)
+
+```php
+class CsvParser {
+    public function parse(string $path): array { /* CSV parsing */ }
+}
+
+class UserRepository {
+    public function save(array $users): void { /* DB writes */ }
+}
+
+class EmailService {
+    public function sendWelcome(string $email): void { /* SMTP send */ }
 }
 ```
 
@@ -353,6 +405,57 @@ fun exportReport(data: List<Any>, format: String): String =
     renderers[format]?.render(data) ?: throw IllegalArgumentException("Unknown format: $format")
 ```
 
+### Ruby — Before (Violation)
+
+```ruby
+def export_report(data, format)
+  if format == "pdf"
+    render_pdf(data)
+  elsif format == "csv"
+    render_csv(data)
+  else
+    raise ArgumentError, "Unknown format: #{format}"
+  end
+end
+```
+
+### Ruby — After (Fixed)
+
+```ruby
+RENDERERS = {
+  "pdf" => PdfRenderer.new,
+  "csv" => CsvRenderer.new,
+}.freeze
+
+def export_report(data, format)
+  renderer = RENDERERS.fetch(format) { raise ArgumentError, "Unknown format: #{format}" }
+  renderer.render(data)
+end
+```
+
+### PHP — Before (Violation)
+
+```php
+function exportReport(array $data, string $format): string {
+    if ($format === 'pdf') return renderPdf($data);
+    elseif ($format === 'csv') return renderCsv($data);
+    else throw new \InvalidArgumentException("Unknown format: $format");
+}
+```
+
+### PHP — After (Fixed)
+
+```php
+interface Renderer { public function render(array $data): string; }
+
+$renderers = ['pdf' => new PdfRenderer(), 'csv' => new CsvRenderer()];
+
+function exportReport(array $data, string $format) use ($renderers): string {
+    if (!isset($renderers[$format])) throw new \InvalidArgumentException("Unknown format: $format");
+    return $renderers[$format]->render($data);
+}
+```
+
 ---
 
 ## L — Liskov Substitution Principle
@@ -374,15 +477,12 @@ class Penguin(Bird):
 ### Python — After (Fixed)
 
 ```python
-class Bird:
-    def move(self) -> str:
-        return "moving"
-
-class FlyingBird(Bird):
+# Flatten hierarchy — each class is independent; no shared base that breaks substitution
+class FlyingBird:
     def fly(self) -> str:
         return "flying"
 
-class Penguin(Bird):
+class Penguin:
     def swim(self) -> str:
         return "swimming"
 ```
@@ -433,12 +533,23 @@ class Penguin extends Bird {
 }
 ```
 
+**Violation**: `Penguin` cannot be substituted for `Bird` — calling `fly()` throws an exception the base class contract doesn't declare.
+
 ### Java — After (Fixed)
 
 ```java
-interface Shape { double area(); }
-class Rectangle implements Shape { public double area() { return width * height; } }
-class Square implements Shape { public double area() { return side * side; } }
+// Flatten hierarchy — each class independently satisfies only what it can do
+interface Movable { String move(); }
+
+class FlyingBird implements Movable {
+    public String move() { return "moving"; }
+    public String fly() { return "flying"; }
+}
+
+class Penguin implements Movable {
+    public String move() { return "moving"; }
+    public String swim() { return "swimming"; }
+}
 ```
 
 ### Go — Before (Violation)
@@ -509,6 +620,62 @@ class Rectangle(val width: Double, val height: Double) : Shape {
 }
 class Square(val side: Double) : Shape {
     override fun area() = side * side
+}
+```
+
+### Ruby — Before (Violation)
+
+```ruby
+class Bird
+  def fly = "flying"
+end
+
+class Penguin < Bird
+  def fly = raise NotImplementedError, "Penguins cannot fly"
+end
+```
+
+### Ruby — After (Fixed)
+
+```ruby
+# Flatten hierarchy — use focused modules instead of broken inheritance
+module Flyable
+  def fly = "flying"
+end
+
+class FlyingBird
+  include Flyable
+end
+
+class Penguin
+  def swim = "swimming"
+end
+```
+
+### PHP — Before (Violation)
+
+```php
+class Bird {
+    public function fly(): string { return "flying"; }
+}
+
+class Penguin extends Bird {
+    public function fly(): string { throw new \BadMethodCallException("Penguins cannot fly"); }
+}
+```
+
+### PHP — After (Fixed)
+
+```php
+interface Flyable { public function fly(): string; }
+interface Swimmable { public function swim(): string; }
+
+class FlyingBird implements Flyable {
+    public function fly(): string { return "flying"; }
+}
+
+class Penguin implements Swimmable {
+    public function swim(): string { return "swimming"; }
 }
 ```
 
@@ -742,6 +909,73 @@ class Robot : Workable, Reportable {
 }
 ```
 
+### Ruby — Before (Violation)
+
+```ruby
+module Worker
+  def work = raise NotImplementedError
+  def eat = raise NotImplementedError
+  def sleep = raise NotImplementedError
+  def report_hours = raise NotImplementedError
+end
+
+class Robot
+  include Worker
+  def work; end           # real implementation
+  def eat = raise NotImplementedError  # forced to stub
+  def sleep = raise NotImplementedError
+  def report_hours = 0
+end
+```
+
+### Ruby — After (Fixed)
+
+```ruby
+module Workable; end
+module HumanNeeds; end
+module Reportable; end
+
+class Robot
+  include Workable
+  include Reportable
+  def work; end        # real implementation
+  def report_hours = 0 # real implementation
+end
+```
+
+### PHP — Before (Violation)
+
+```php
+interface Worker {
+    public function work(): void;
+    public function eat(): void;
+    public function sleep(): void;
+    public function reportHours(): int;
+    public function requestVacation(): void;
+}
+
+class Robot implements Worker {
+    public function work(): void { /* impl */ }
+    public function eat(): void { throw new \BadMethodCallException("not supported"); }
+    public function sleep(): void { throw new \BadMethodCallException("not supported"); }
+    public function reportHours(): int { return 0; }
+    public function requestVacation(): void { throw new \BadMethodCallException("not supported"); }
+}
+```
+
+### PHP — After (Fixed)
+
+```php
+interface Workable { public function work(): void; }
+interface HumanNeeds { public function eat(): void; public function sleep(): void; }
+interface Reportable { public function reportHours(): int; }
+
+class Robot implements Workable, Reportable {
+    public function work(): void { /* impl */ }
+    public function reportHours(): int { return 0; }
+}
+```
+
 ---
 
 ## D — Dependency Inversion Principle
@@ -807,7 +1041,8 @@ interface Database {
 }
 
 class ReportService {
-  constructor(private db: Database) {}
+  // Default preserves existing call sites that don't pass a db argument
+  constructor(private db: Database = new MySqlDatabase("localhost", 3306)) {}
 
   generateReport(userId: string): Report {
     const data = this.db.query(`SELECT * FROM orders WHERE user_id = ?`, [userId]);
@@ -905,5 +1140,57 @@ interface Database { fun save(order: Order); fun find(id: String): Order? }
 class OrderService(private val db: Database) {
     // Android: inject Database via Hilt or Koin
     fun placeOrder(order: Order) = db.save(order)
+}
+```
+
+### Ruby — Before (Violation)
+
+```ruby
+class OrderService
+  def initialize
+    @db = PostgresDatabase.new(host: "localhost", port: 5432)
+  end
+
+  def place_order(order) = @db.save(order)
+end
+```
+
+### Ruby — After (Fixed)
+
+```ruby
+# Keyword argument with default preserves existing call sites
+class OrderService
+  def initialize(db: PostgresDatabase.new(host: "localhost", port: 5432))
+    @db = db
+  end
+
+  def place_order(order) = @db.save(order)
+end
+```
+
+### PHP — Before (Violation)
+
+```php
+class OrderService {
+    private PostgresDatabase $db;
+    public function __construct() {
+        $this->db = new PostgresDatabase("localhost", 5432);
+    }
+    public function placeOrder(Order $order): void { $this->db->save($order); }
+}
+```
+
+### PHP — After (Fixed)
+
+```php
+interface DatabaseInterface {
+    public function save(Order $order): void;
+    public function find(string $id): ?Order;
+}
+
+class OrderService {
+    public function __construct(private readonly DatabaseInterface $db) {}
+    // Symfony/Laravel DI containers resolve DatabaseInterface automatically
+    public function placeOrder(Order $order): void { $this->db->save($order); }
 }
 ```

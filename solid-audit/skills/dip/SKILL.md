@@ -16,7 +16,7 @@ Determine which files to analyze using this priority order:
 3. **Git unstaged** — Run `git diff --name-only`. If output is non-empty, use those files.
 4. **Ask user** — If no git diff is available, ask for a file or directory path.
 
-**Always skip:** `*.lock`, `package-lock.json`, `yarn.lock`, `**/migrations/**`, `**/__generated__/**`, `**/fixtures/**`
+**Always skip:** `*.lock`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `Gemfile.lock`, `composer.lock`, `**/migrations/**`, `**/__generated__/**`, `**/fixtures/**`, `**/*.min.js`
 
 ## DIP Fix Logic
 
@@ -47,12 +47,19 @@ A high-level module violates DIP when it depends directly on a concrete low-leve
 
 ### Fix Strategy
 
-Introduce constructor injection with an abstract type:
+**For constructor/`__init__` instantiation:**
 
-1. Define a `Protocol` (Python), `interface` (TypeScript/Java), or `interface` type (Go) that declares the behavior needed
+1. Define a `Protocol` (Python), `interface` (TypeScript/Java/C#/PHP), or `interface` type (Go/Kotlin) that declares the behavior needed
 2. Add the abstraction as a constructor parameter
 3. Remove the internal instantiation
 4. Preserve existing default values where possible to minimize call-site changes
+
+**For module-level singletons (`DB = PostgresDatabase()` at module level):**
+
+1. Define the same interface/Protocol as above
+2. Move the instantiation to the call site or to an application entry-point (e.g., `main.py`, `Program.cs`, `main.go`)
+3. Pass the instance to the classes that need it via constructor injection
+4. Flag as `[SKIP — module-level singleton; refactor requires coordinating multiple call sites]` if the singleton is used in many files outside scope
 
 **Language patterns:**
 
@@ -229,8 +236,8 @@ Found {N} DIP violation(s):
 Proceed with fix? (yes/no)
 ```
 
-If the user confirms → apply the fix and show the diff summary.
-If the user declines → do not modify any files.
+If the user types "yes", "y", or "proceed" → apply the fix and show the diff summary.
+If the user types "no", "n", "skip", or "cancel" → do not modify any files.
 
 ## Output After Fix
 
@@ -249,10 +256,13 @@ If the user declines → do not modify any files.
 
 1. **Always ask for confirmation** before writing any file.
 2. **If user declines**: Do not modify any file.
-3. **Behavior-preserving only**: The default value on the constructor parameter preserves existing behavior — callers that don't pass a `db` argument get the same concrete class as before.
+3. **Behavior-preserving only**: The default value on the constructor parameter preserves existing behavior — callers that don't pass a `db` argument get the same concrete class as before. Always add the default when the concrete class has a clear default instantiation. If no sensible default is possible, call sites will need to be updated — warn the user.
 4. **Preserve defaults**: When the concrete class has sensible default instantiation, keep it as the default parameter value. This ensures zero call-site changes in most cases.
-5. **Minimal Protocol**: Define only the methods actually called on the dependency within the file — don't over-engineer the abstraction.
-6. **Caller scope**: If removing the internal instantiation would require changing callers that depend on the side effects of instantiation → flag and discuss.
-7. **Minimal footprint**: Add the Protocol definition and update the constructor only.
-8. **Style matching**: Match existing code style — type hints, docstrings, import ordering.
-9. **Diff summary**: After each modified file, show a plain-English summary of what changed.
+5. **Do not flag**: Standard library classes (`logging.Logger`, `pathlib.Path`, `fmt`, `Console`), parameters that already accept an interface type, or constructors where the dependency is already injected.
+6. **Minimal Protocol**: Define only the methods actually called on the dependency within the file — don't over-engineer the abstraction.
+7. **Caller scope**: If removing the internal instantiation would require changing callers that depend on the side effects of instantiation → flag and discuss.
+8. **Minimal footprint**: Add the Protocol/interface definition and update the constructor only.
+9. **Style matching**: Match existing code style — type hints, docstrings, import ordering.
+10. **Diff summary**: After each modified file, show a plain-English summary of what changed.
+11. **Test files**: Flag violations only if they cause real maintainability issues. Do not flag test classes that directly instantiate the system under test.
+12. **Large files (>500 lines)**: Note that the fix may need to be applied incrementally.

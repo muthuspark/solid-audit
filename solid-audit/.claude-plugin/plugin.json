@@ -1,6 +1,6 @@
 {
   "name": "solid-audit",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "SOLID design auditor and fixer for Claude Code. Audit changed files for violations and apply behavior-preserving fixes.",
   "author": {
     "name": "Muthukrishnan"

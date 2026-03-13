@@ -16,7 +16,7 @@ Determine which files to analyze using this priority order:
 3. **Git unstaged** — Run `git diff --name-only`. If output is non-empty, use those files.
 4. **Ask user** — If no git diff is available, ask for a file or directory path.
 
-**Always skip:** `*.lock`, `package-lock.json`, `yarn.lock`, `**/migrations/**`, `**/__generated__/**`, `**/fixtures/**`
+**Always skip:** `*.lock`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `Gemfile.lock`, `composer.lock`, `**/migrations/**`, `**/__generated__/**`, `**/fixtures/**`, `**/*.min.js`
 
 ## Orchestration Logic
 

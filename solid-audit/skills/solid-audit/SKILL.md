@@ -34,7 +34,8 @@ For each file in scope, read its full content and check for each of the five SOL
 **Violation pattern:** A class or function that handles two or more unrelated concerns. Look for:
 - A class with method groups that belong to distinct responsibilities (e.g., data parsing AND email sending AND logging in one class)
 - A function that both validates input AND persists data AND formats output
-- A class whose name contains "And" or "Manager" and handles unrelated operations
+- A class whose name contains "And", "Manager", or "Handler" and handles multiple unrelated operations
+- A class that imports from two or more unrelated domains (e.g., imports both an SMTP library and a database driver)
 
 **Language idioms:**
 - Python: each class should have one reason to change; use `dataclass` for value objects
@@ -49,7 +50,8 @@ For each file in scope, read its full content and check for each of the five SOL
 ### O — Open/Closed Principle
 
 **Violation pattern:** Code that must be modified to extend behavior. Look for:
-- `if type == "x": ... elif type == "y": ...` (switch-on-type strings)
+- `if type == "x": ... elif type == "y": ...` (switch-on-type strings) or equivalent `switch`/`case` statements in Java, C#, PHP
+- `when (type) { "x" -> ... "y" -> ... }` in Kotlin
 - `isinstance` chains used for dispatch (e.g., `if isinstance(obj, TypeA): ... elif isinstance(obj, TypeB): ...`)
 - Direct subclass instantiation chosen by condition
 
@@ -66,10 +68,15 @@ For each file in scope, read its full content and check for each of the five SOL
 ### L — Liskov Substitution Principle
 
 **Violation pattern:** A subclass that cannot be used in place of its base class. Look for:
-- `raise NotImplementedError` (Python/Ruby) or `throw new Error("not implemented")` / `throw new UnsupportedOperationException()` (TS/Java/Kotlin) or `throw new NotImplementedException()` (C#) or `throw new \BadMethodCallException()` (PHP) in a method inherited from the base class
-- `TODO()` (Kotlin) used as a stub in an overriding method
-- A subclass method that rejects inputs the base class accepts (narrowed preconditions)
-- A subclass method that returns a more restricted type or throws exceptions not declared in the base contract
+- `raise NotImplementedError` (Python/Ruby) in an overriding method
+- `throw new Error("not implemented")` (TypeScript) in an overriding method
+- `throw new UnsupportedOperationException()` (Java) in an overriding method
+- `throw UnsupportedOperationException()` or `TODO()` (Kotlin) used as a stub in an overriding method
+- `throw new NotImplementedException()` (C#) in an overriding method
+- `throw new \BadMethodCallException("not implemented")` (PHP) in an overriding method
+- A subclass method with an empty body (`pass` in Python, `{}` in TS/Java/C#/Go) that overrides meaningful base-class behavior (silent no-op)
+- A subclass method that rejects inputs the base class accepts (narrowed preconditions — e.g., base accepts any `int`, subclass only accepts `int > 0`)
+- A subclass method that returns a more restricted type or raises exceptions not declared in the base contract
 
 **Language idioms:**
 - Python: flatten hierarchy or replace inheritance with composition
@@ -83,8 +90,10 @@ For each file in scope, read its full content and check for each of the five SOL
 ### I — Interface Segregation Principle
 
 **Violation pattern:** A fat interface that forces implementors to provide methods they don't use. Look for:
-- `abc.ABC` (Python) or `interface` (TS/Java) or `interface{}` (Go) with 6+ abstract methods where a concrete implementor stubs ≥ half with `pass`, `raise NotImplementedError`, or `throw new Error`
-- A single interface mixing logically distinct responsibilities
+- `abc.ABC` or `Protocol` (Python), `interface` (TS/Java/C#/Kotlin/PHP), or a named `interface` type (Go) with 6+ abstract methods where a concrete implementor stubs ≥ half with `pass`, `raise NotImplementedError`, `throw new Error`, `throw new UnsupportedOperationException()`, `throw new NotImplementedException()`, or `TODO()`
+- A single interface mixing logically distinct responsibilities (e.g., `print()`, `scan()`, and `send_email()` in one interface)
+
+**Identifying a "thin data container":** Skip if the type has no behavior — only fields, getters/setters, or a constructor. Do not skip if it has 2+ distinct behavioral method groups.
 
 **Skip** if the class is clearly a thin data container or value object (not a fat interface violation).
 
@@ -100,9 +109,14 @@ For each file in scope, read its full content and check for each of the five SOL
 ### D — Dependency Inversion Principle
 
 **Violation pattern:** A high-level module depending directly on a concrete low-level implementation. Look for:
-- Concrete class instantiation inside `__init__` (Python) or constructor (TS/Java) — e.g., `self.db = DatabaseClient()`
+- Concrete class instantiation inside `__init__` (Python), constructor (TS/Java/C#/Kotlin), or `initialize` (Ruby) — e.g., `self.db = DatabaseClient()`, `this.db = new DatabaseClient()`
 - Hardcoded `import` of a concrete class used directly with no abstraction layer
-- Module-level singleton dependency fetched without injection
+- Module-level singleton dependency fetched without injection — e.g., `DB = PostgresDatabase()` at module level
+
+**Do not flag:**
+- Parameters that already accept an interface/Protocol type
+- Standard library classes that are universally stable (e.g., `logging.Logger`, `pathlib.Path`, `fmt.Println`, `Console`)
+- Constructors that already accept the concrete type as an injected parameter (even if untyped)
 
 **Language idioms:**
 - Python: accept a `Protocol` type in `__init__`, remove internal instantiation. Preserve defaults where possible: `def __init__(self, db: DbProtocol = DatabaseClient())`

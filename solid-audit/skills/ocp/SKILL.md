@@ -16,7 +16,7 @@ Determine which files to analyze using this priority order:
 3. **Git unstaged** — Run `git diff --name-only`. If output is non-empty, use those files.
 4. **Ask user** — If no git diff is available, ask for a file or directory path.
 
-**Always skip:** `*.lock`, `package-lock.json`, `yarn.lock`, `**/migrations/**`, `**/__generated__/**`, `**/fixtures/**`
+**Always skip:** `*.lock`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `Gemfile.lock`, `composer.lock`, `**/migrations/**`, `**/__generated__/**`, `**/fixtures/**`, `**/*.min.js`
 
 ## OCP Fix Logic
 
@@ -24,10 +24,12 @@ Determine which files to analyze using this priority order:
 
 Code violates OCP when adding new behavior requires modifying existing code. Look for:
 
-- `if type == "x": ... elif type == "y": ...` chains dispatching on a string or enum type
+- `if type == "x": ... elif type == "y": ...` chains (Python/Ruby) dispatching on a string or enum type
+- `switch (type) { case "x": ... case "y": ... }` statements (Java/C#/PHP/TypeScript) dispatching on a string or enum type
+- `when (type) { "x" -> ... "y" -> ... }` expressions (Kotlin) dispatching on a string or enum type
 - `isinstance` chains used for dispatch: `if isinstance(obj, TypeA): ... elif isinstance(obj, TypeB): ...`
 - Direct subclass instantiation chosen by condition: `if kind == "pdf": return PdfExporter()`
-- Factory functions with growing if/elif blocks that must be edited to add new variants
+- Factory functions with growing if/elif/switch blocks that must be edited to add new variants
 
 ### Fix Strategy
 
@@ -99,7 +101,7 @@ string Export(List<object> data, string format) {
 }
 ```
 
-**Kotlin:**
+**Kotlin (registry pattern):**
 ```kotlin
 interface Renderer { fun render(data: List<Any>): String }
 val renderers: Map<String, Renderer> = mapOf(
@@ -108,6 +110,19 @@ val renderers: Map<String, Renderer> = mapOf(
 )
 fun export(data: List<Any>, format: String): String =
     renderers[format]?.render(data) ?: throw IllegalArgumentException("Unknown format: $format")
+```
+
+**Kotlin (sealed class — preferred when variants are closed and known at compile time):**
+```kotlin
+sealed class Format {
+    object Pdf : Format()
+    object Csv : Format()
+}
+fun export(data: List<Any>, format: Format): String = when (format) {
+    is Format.Pdf -> PdfRenderer().render(data)
+    is Format.Csv -> CsvRenderer().render(data)
+    // compiler enforces exhaustiveness — no else branch needed
+}
 ```
 
 **Ruby:**
@@ -159,8 +174,8 @@ Found {N} OCP violation(s):
 Proceed with fix? (yes/no)
 ```
 
-If the user confirms → apply the fix and show the diff summary.
-If the user declines → do not modify any files.
+If the user types "yes", "y", or "proceed" → apply the fix and show the diff summary.
+If the user types "no", "n", "skip", or "cancel" → do not modify any files.
 
 ## Output After Fix
 
@@ -184,3 +199,5 @@ If the user declines → do not modify any files.
 5. **Minimal footprint**: Touch only the dispatch logic and the Protocol/interface definition.
 6. **Style matching**: Match existing code style — type hints, docstrings, import ordering.
 7. **Diff summary**: After each modified file, show a plain-English summary of what changed.
+8. **Test files**: Flag violations only if they cause real maintainability issues. Do not flag test factory helpers that use type-dispatch to build mocks — this is intentional test scaffolding.
+9. **Large files (>500 lines)**: Note that the fix may need to be applied incrementally.

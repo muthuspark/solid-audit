@@ -16,7 +16,7 @@ Determine which files to analyze using this priority order:
 3. **Git unstaged** — Run `git diff --name-only`. If output is non-empty, use those files.
 4. **Ask user** — If no git diff is available, ask for a file or directory path.
 
-**Always skip:** `*.lock`, `package-lock.json`, `yarn.lock`, `**/migrations/**`, `**/__generated__/**`, `**/fixtures/**`
+**Always skip:** `*.lock`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `Gemfile.lock`, `composer.lock`, `**/migrations/**`, `**/__generated__/**`, `**/fixtures/**`, `**/*.min.js`
 
 ## LSP Fix Logic
 
@@ -177,8 +177,8 @@ Found {N} LSP violation(s):
 Proceed with fix? (yes/no)
 ```
 
-If the user confirms → apply the fix and show the diff summary.
-If the user declines → do not modify any files.
+If the user types "yes", "y", or "proceed" → apply the fix and show the diff summary.
+If the user types "no", "n", "skip", or "cancel" → do not modify any files.
 
 ## Output After Fix
 
@@ -199,7 +199,9 @@ If the user declines → do not modify any files.
 2. **If user declines**: Do not modify any file.
 3. **Behavior-preserving only**: The fix must not change observable behavior for existing callers. If it cannot be guaranteed, flag and skip.
 4. **Caller scope**: If the fix requires updating call sites outside the reviewed file(s), flag with `[SKIP — callers outside scope may be affected]`.
-5. **Minimal footprint**: Touch only the class hierarchy. Do not refactor unrelated code.
-6. **Style matching**: Match existing code style — type hints, docstrings, import ordering.
-7. **Diff summary**: After each modified file, show a plain-English summary of what changed.
-8. **Test files**: Flag only if the violation causes real maintainability issues.
+5. **Narrowed preconditions / strengthened postconditions**: Flag these as violations but mark as `[SKIP — requires caller analysis beyond scope]` unless the full call graph is visible. Do not attempt automated fixes for these — they require human judgement.
+6. **Minimal footprint**: Touch only the class hierarchy. Do not refactor unrelated code.
+7. **Style matching**: Match existing code style — type hints, docstrings, import ordering.
+8. **Diff summary**: After each modified file, show a plain-English summary of what changed.
+9. **Test files**: Flag only if the violation causes real maintainability issues.
+10. **Large files (>500 lines)**: Note that the fix may need to be applied incrementally.
