@@ -4,6 +4,8 @@ SOLID design auditor and fixer for Claude Code.
 
 Review your changed files for SOLID design principle violations and apply targeted, behavior-preserving fixes — without leaving your Claude Code session.
 
+![](images/solid.png)
+
 ## Install
 
 ```bash
@@ -15,6 +17,11 @@ Review your changed files for SOLID design principle violations and apply target
 ```
 
 Run this once in any Claude Code session. The plugin is available immediately.
+
+
+Post installation you should see the plugin listed in the marketplace tab
+
+![](images/marketplace.png)
 
 ---
 
