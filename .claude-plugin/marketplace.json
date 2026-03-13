@@ -12,12 +12,13 @@
     {
       "name": "solid-audit",
       "description": "SOLID design auditor and fixer for Claude Code. Audit changed files for violations and apply behavior-preserving fixes with /solid-audit, /srp, /ocp, /lsp, /isp, /dip, and /solid-fix.",
-      "version": "1.0.3",
+      "version": "1.0.4",
       "author": {
         "name": "Muthukrishnan",
         "email": "muthukrishnan749@gmail.com"
       },
       "source": "./",
+      "strict": true,
       "homepage": "https://github.com/muthuspark/solid-audit"
     }
   ]

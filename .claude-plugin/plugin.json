@@ -1,11 +1,12 @@
 {
   "name": "solid-audit",
   "description": "SOLID design auditor and fixer for Claude Code.",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": {
     "name": "Muthukrishnan",
     "email": "muthukrishnan749@gmail.com"
   },
   "homepage": "https://github.com/muthuspark/solid-audit",
-  "repository": "https://github.com/muthuspark/solid-audit"
+  "repository": "https://github.com/muthuspark/solid-audit",
+  "skills": "./skills"
 }
